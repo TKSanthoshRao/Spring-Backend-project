@@ -8,6 +8,20 @@ function fetchExpences(){
         });
 }
 
+let ALL_ROLES = [];
+
+function fetchAllRoles() {
+    return fetch("/admin/roles")
+        .then(res => {
+            if (!res.ok) throw new Error("Cannot fetch roles");
+            return res.json();
+        })
+        .then(data => {
+            ALL_ROLES = data;
+        });
+}
+
+
 function loadExpenses(method) {
      var x = method();
         x.then(data => {
@@ -48,6 +62,7 @@ window.onload = function () {
     loadExpenses(fetchExpences);
     loadHabitTracker();
     fetchALLUsers();
+    fetchAllRoles();
 };
 
 
@@ -241,11 +256,27 @@ function fetchALLUsers(){
             passwordTd.innerText = user.password;
 
             const RolesTd = document.createElement("td");
-            var str = "";
-            for (let i = 0; i < user.roles.length; i++) {
-                str+=user.roles[i].name+" ";
-            }
-            RolesTd.innerText = str;
+
+            ALL_ROLES.forEach(role => {
+                const btn = document.createElement("button");
+                btn.innerText = role.name;
+                btn.style.margin = "3px";
+
+                const hasRole = user.roles.some(r => r.id === role.id);
+
+                if (hasRole) {
+                    btn.style.backgroundColor = "green";
+                    btn.style.color = "white";
+                    btn.onclick = () => removeRoleFromUser(user.id, role.id);
+                } else {
+                    btn.style.backgroundColor = "gray";
+                    btn.style.color = "white";
+                    btn.onclick = () => addRoleToUser(user.id, role.id);
+                }
+
+                RolesTd.appendChild(btn);
+            });
+
             // action cell
             const actionTd = document.createElement("td");
             const deleteBtn = document.createElement("button");
@@ -276,4 +307,19 @@ function deleteUser(userId) {
             fetchALLUsers();
         })
         .catch(err => alert(err.message));
+}
+
+
+function addRoleToUser(userid,roleid){
+    fetch(`/admin/role/user/${userid}/role/${roleid}`,{
+        method : "POST",
+        headers : {"Content-Type" : "application/json"},
+    }).then(response => {
+        if(!response.ok){
+            throw new Error("Some error occuerd in calling add role to user api");
+        }
+        fetchALLUsers();
+        alert("success role add to user"+JSON.stringify(response));
+    }).catch(error => alert("Error occured "+error));
+
 }
