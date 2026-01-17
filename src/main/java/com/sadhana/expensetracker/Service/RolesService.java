@@ -4,6 +4,7 @@ import com.sadhana.expensetracker.Model.Roles;
 import com.sadhana.expensetracker.Model.Users;
 import com.sadhana.expensetracker.Repo.RolesRepo;
 import com.sadhana.expensetracker.Repo.UserRepo;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +45,20 @@ public class RolesService {
         }else  {
             return "Role Not Found";
         }
+    }
+
+    public ResponseEntity<String> deleteRoleForUser(Long userid, Long roleid) {
+        Roles requestedRoleToRemove = rolesRepo.findById(roleid).get();
+      Users  requestUser = userRepo.findById(userid).get();
+      Set<Roles> current_user_roles = requestUser.getRoles();
+      if(requestedRoleToRemove!=null && current_user_roles.contains(requestedRoleToRemove)) {
+          current_user_roles.remove(requestedRoleToRemove);
+          requestUser.setRoles(current_user_roles);
+          userRepo.save(requestUser);
+          return new ResponseEntity<>("Role Deleted Successfully", HttpStatus.OK);
+      }
+      else {
+          return new ResponseEntity<>("Role Not Found", HttpStatus.NOT_FOUND);
+      }
     }
 }

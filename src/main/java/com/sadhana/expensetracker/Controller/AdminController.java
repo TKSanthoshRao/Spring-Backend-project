@@ -17,6 +17,7 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/admin")
+@CrossOrigin("http://localhost:5173/")
 public class AdminController {
 
 
@@ -53,4 +54,10 @@ public class AdminController {
         return ResponseEntity.ok(rolesService.addRoleToUser(userid, roleid));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("role/user/{userid}/role/{roleid}")
+    public ResponseEntity<String> deleteRole(@PathVariable Long userid, @PathVariable Long roleid) {
+        System.out.println("delete role request for "+userid+" "+roleid);
+        return rolesService.deleteRoleForUser(userid,roleid);
+    }
 }
